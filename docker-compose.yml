@@ -26,6 +26,9 @@ services:
       - /dev/video12:/dev/video12
     privileged: true
     x-casaos:
+      port_map: "5800"
+      scheme: "http"
+      index: "/"
       envs:
         - container: APP_PASSWORD
           description:

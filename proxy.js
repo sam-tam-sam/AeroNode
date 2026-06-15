@@ -71,7 +71,7 @@ router.all('/', async (req, res) => {
         if (match) filename = match[1];
       } else {
         const ext = mime.extension(contentType);
-        filename = \`file_\${Date.now()}.\${ext || 'bin'}\`;
+        filename = `file_${Date.now()}.${ext || 'bin'}`;
       }
 
       const filePath = path.join(storageDir, filename);
@@ -99,7 +99,7 @@ router.all('/', async (req, res) => {
         if (ioInstance) ioInstance.emit('download_complete', { filename });
       });
 
-      return res.send(\`<script>alert('Downloading \${filename} to storage directory...'); window.history.back();</script>\`);
+      return res.send(`<script>alert('Downloading ${filename} to storage directory...'); window.history.back();</script>`);
     }
 
     // Rewrite HTML
@@ -114,7 +114,7 @@ router.all('/', async (req, res) => {
           if (!attrUrl || attrUrl.startsWith('data:') || attrUrl.startsWith('javascript:')) return attrUrl;
           try {
             const absoluteUrl = new URL(attrUrl, baseUrl.href).href;
-            return \`/proxy?url=\${encodeURIComponent(absoluteUrl)}\`;
+            return `/proxy?url=${encodeURIComponent(absoluteUrl)}`;
           } catch (e) {
             return attrUrl;
           }
@@ -125,16 +125,16 @@ router.all('/', async (req, res) => {
         $('[action]').each((_, el) => { $(el).attr('action', rewriteUrl($(el).attr('action'))); });
         
         // Inject script to intercept window.fetch and XHR if needed
-        $('head').prepend(\`<script>
+        $('head').prepend(`<script>
           const originalFetch = window.fetch;
           window.fetch = function() {
             if (typeof arguments[0] === 'string' && !arguments[0].startsWith('/proxy?')) {
-               const absolute = new URL(arguments[0], '\${baseUrl.href}').href;
+               const absolute = new URL(arguments[0], '${baseUrl.href}').href;
                arguments[0] = '/proxy?url=' + encodeURIComponent(absolute);
             }
             return originalFetch.apply(this, arguments);
           };
-        </script>\`);
+        </script>`);
 
         res.set(headers);
         res.send($.html());

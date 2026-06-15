@@ -102,6 +102,6 @@ const PORT = process.env.PORT || 5800;
 
 initAdblocker().then(() => {
   server.listen(PORT, () => {
-    console.log(\`Server listening on port \${PORT}\`);
+    console.log(`Server listening on port ${PORT}`);
   });
 });
