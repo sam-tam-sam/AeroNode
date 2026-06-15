@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  antigravity-light-browser:
+    image: antigravity-light-browser:latest
+    container_name: antigravity-light-browser
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5800:5800"
+    environment:
+      - APP_PASSWORD=casaos
+      - USER_ID=0
+      - GROUP_ID=0
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /DATA/AppData/light-browser/config:/config
+      - /mnt/storage:/media_hdd
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/vcsm:/dev/vcsm
+      - /dev/vchiq:/dev/vchiq
+      - /dev/video10:/dev/video10
+      - /dev/video11:/dev/video11
+      - /dev/video12:/dev/video12
+    privileged: true
+    x-casaos:
+      envs:
+        - container: APP_PASSWORD
+          description:
+            en_us: Password to access the browser UI
+        - container: PUID
+          description:
+            en_us: User ID
+        - container: PGID
+          description:
+            en_us: Group ID
+      volumes:
+        - container: /config
+          description:
+            en_us: Config directory for SQLite DB and settings
+        - container: /media_hdd
+          description:
+            en_us: External storage for downloads
+      ports:
+        - container: 5800
+          description:
+            en_us: Web UI port
+      description:
+        en_us: An ultra-lightweight proxy-based web browser with ad-blocking and download management.
+      title:
+        en_us: Antigravity Light Browser
+      icon: https://cdn.iconscout.com/icon/free/png-256/browser-1411244-1194348.png
+      category: Network
+      author: Antigravity
+      developer: Antigravity
