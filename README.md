@@ -16,20 +16,17 @@ The **AeroNode** browser solves this by avoiding desktop streaming entirely. Ins
 
 ## Installation Guide (CasaOS)
 
-This application is designed to be installed using CasaOS's custom app installer feature. 
-
-### Prerequisites
-Make sure your external storage (where you want downloads to go) is mounted to your CasaOS host system. The default `docker-compose.yml` expects it at `/mnt/storage`. 
+AeroNode uses GitHub Container Registry (GHCR) so you can install it seamlessly without any terminal commands or manual builds!
 
 ### Step-by-Step Installation
 
-1. **Access CasaOS:** Open your CasaOS web interface.
-2. **Open App Center:** Click on the **App Center** icon.
-3. **Custom Install:** Click the **Custom Install** icon located in the top-right corner of the App Center.
-4. **Import Docker Compose:** Click the import icon (folder icon) at the top right of the Custom Install window.
-5. **Paste the YAML:** Copy the entire contents of the `docker-compose.yml` from this repository and paste it into the text box. Submit the form.
+1. Open the `docker-compose.yml` file from this repository and copy its entire contents.
+2. Open your CasaOS web interface and click on the **App Center**.
+3. Click the **Custom Install** icon located in the top-right corner.
+4. Click the **Import** icon (folder icon) at the top right of the new window.
+5. Paste the copied YAML content into the text box and click submit. CasaOS will automatically fill out the form for you!
 6. **Configure Storage:** Review the Volume mappings. Under `/media_hdd`, ensure the Host path correctly points to the directory where you want your browser downloads saved (e.g., `/mnt/storage/downloads`).
 7. **Configure Password:** Set your desired login password via the `APP_PASSWORD` environment variable (default is `casaos`).
-8. **Install:** Click **Install** at the bottom of the window. CasaOS will pull the image and build the container.
+8. Click **Install**. CasaOS will automatically pull the compiled image from GHCR and launch the app.
 
 Once installed, simply click on the new "AeroNode" icon on your CasaOS dashboard, log in with your password, and enjoy lightweight browsing!

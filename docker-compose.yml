@@ -2,9 +2,8 @@ version: '3.9'
 
 services:
   aeronode-browser:
-    image: aeronode-browser:latest
+    image: ghcr.io/sam-tam-sam/aeronode:latest
     container_name: aeronode-browser
-    build: .
     restart: unless-stopped
     ports:
       - "5800:5800"
