@@ -26,7 +26,6 @@ AeroNode uses GitHub Container Registry (GHCR) so you can install it seamlessly 
 4. Click the **Import** icon (folder icon) at the top right of the new window.
 5. Paste the copied YAML content into the text box and click submit. CasaOS will automatically fill out the form for you!
 6. **Configure Storage:** Review the Volume mappings. Under `/media_hdd`, ensure the Host path correctly points to the directory where you want your browser downloads saved (e.g., `/mnt/storage/downloads`).
-7. **Configure Password:** Set your desired login password via the `APP_PASSWORD` environment variable (default is `casaos`).
-8. Click **Install**. CasaOS will automatically pull the compiled image from GHCR and launch the app.
+7. Click **Install**. CasaOS will automatically pull the compiled image from GHCR and launch the app.
 
-Once installed, simply click on the new "AeroNode" icon on your CasaOS dashboard, log in with your password, and enjoy lightweight browsing!
+Once installed, simply click on the new "AeroNode" icon on your CasaOS dashboard and enjoy lightweight browsing!
