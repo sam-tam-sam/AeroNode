@@ -1,9 +1,9 @@
 version: '3.9'
 
 services:
-  antigravity-light-browser:
-    image: antigravity-light-browser:latest
-    container_name: antigravity-light-browser
+  aeronode-browser:
+    image: aeronode-browser:latest
+    container_name: aeronode-browser
     build: .
     restart: unless-stopped
     ports:
@@ -51,8 +51,8 @@ services:
       description:
         en_us: An ultra-lightweight proxy-based web browser with ad-blocking and download management.
       title:
-        en_us: Antigravity Light Browser
+        en_us: AeroNode Browser
       icon: https://cdn.iconscout.com/icon/free/png-256/browser-1411244-1194348.png
       category: Network
-      author: Antigravity
-      developer: Antigravity
+      author: AeroNode
+      developer: AeroNode

@@ -1,5 +1,5 @@
 {
-  "name": "antigravity-light-browser",
+  "name": "aeronode-browser",
   "version": "1.0.0",
   "description": "Lightweight Proxy-Based Web Browser",
   "main": "server.js",
