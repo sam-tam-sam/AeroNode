@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   aeronode-browser:
+    build: .
     image: ghcr.io/sam-tam-sam/aeronode:latest
     container_name: aeronode-browser
     restart: unless-stopped
