@@ -8,13 +8,10 @@
   },
   "dependencies": {
     "@ghostery/adblocker": "^2.2.6",
-    "axios": "^1.7.2",
     "better-sqlite3": "^11.0.0",
-    "cheerio": "^1.0.0-rc.12",
-    "cookie-parser": "^1.4.6",
+    "cross-fetch": "^4.0.0",
     "express": "^4.19.2",
     "mime-types": "^2.1.35",
-    "socket.io": "^4.7.5",
-    "cross-fetch": "^4.0.0"
+    "socket.io": "^4.7.5"
   }
 }

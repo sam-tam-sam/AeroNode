@@ -1,17 +1,12 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
 const path = require('path');
+const { spawn } = require('child_process');
+const fetch = require('cross-fetch');
 const db = require('./db');
-const { initAdblocker } = require('./adblock');
-const proxyRouter = require('./proxy');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
-
-// Make io accessible globally if needed, or via app.get
-app.set('io', io);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,53 +14,111 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Proxy Route
-app.use('/proxy', proxyRouter);
+// --- Process Management ---
+const processes = [];
 
-// Database API Routes
+function spawnProcess(name, command, args, envVars = {}) {
+    console.log(`Starting ${name}...`);
+    const proc = spawn(command, args, {
+        env: { ...process.env, ...envVars },
+        stdio: 'inherit'
+    });
+    
+    proc.on('error', (err) => {
+        console.error(`${name} error:`, err);
+    });
+    
+    proc.on('close', (code) => {
+        console.log(`${name} exited with code ${code}`);
+    });
+    
+    processes.push(proc);
+    return proc;
+}
+
+// 1. Start Xvfb (Virtual Screen 1280x800)
+spawnProcess('Xvfb', 'Xvfb', [':99', '-screen', '0', '1280x800x24']);
+
+// Wait a bit for Xvfb to start before starting GTK app
+setTimeout(() => {
+    // 2. Start WebKitGTK Python Wrapper
+    spawnProcess('BrowserCore', 'python3', ['browser_core.py'], { DISPLAY: ':99' });
+    
+    // 3. Start x11vnc to capture the screen
+    spawnProcess('x11vnc', 'x11vnc', ['-display', ':99', '-forever', '-nopw', '-shared', '-quiet']);
+    
+    // 4. Start websockify to convert VNC to WebSockets for noVNC
+    spawnProcess('websockify', 'websockify', ['6080', 'localhost:5900']);
+}, 2000);
+
+// Ensure child processes are killed when node exits
+process.on('SIGINT', () => {
+    processes.forEach(p => p.kill('SIGKILL'));
+    process.exit();
+});
+process.on('SIGTERM', () => {
+    processes.forEach(p => p.kill('SIGKILL'));
+    process.exit();
+});
+
+// --- UI to Browser API Bridge ---
+
+const PYTHON_API = 'http://127.0.0.1:5000';
+
+app.post('/api/browser/navigate', async (req, res) => {
+    try {
+        const response = await fetch(`${PYTHON_API}/navigate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to communicate with Browser Core' });
+    }
+});
+
+app.post('/api/browser/back', async (req, res) => {
+    try {
+        await fetch(`${PYTHON_API}/go_back`, { method: 'POST' });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Error' });
+    }
+});
+
+app.post('/api/browser/forward', async (req, res) => {
+    try {
+        await fetch(`${PYTHON_API}/go_forward`, { method: 'POST' });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Error' });
+    }
+});
+
+app.post('/api/browser/reload', async (req, res) => {
+    try {
+        await fetch(`${PYTHON_API}/reload`, { method: 'POST' });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Error' });
+    }
+});
+
+// Database endpoints for history/bookmarks remain here
 app.get('/api/history', (req, res) => {
-  const history = db.prepare('SELECT * FROM history ORDER BY timestamp DESC LIMIT 50').all();
-  res.json(history);
+    const history = db.prepare('SELECT * FROM history ORDER BY timestamp DESC LIMIT 50').all();
+    res.json(history);
 });
-
 app.post('/api/history', (req, res) => {
-  const { url, title } = req.body;
-  db.prepare('INSERT INTO history (url, title) VALUES (?, ?)').run(url, title);
-  res.json({ success: true });
-});
-
-app.get('/api/settings', (req, res) => {
-  const adblock = db.prepare('SELECT value FROM settings WHERE key = ?').get('adblock_enabled');
-  res.json({ adblock_enabled: adblock ? adblock.value === 'true' : true });
-});
-
-app.post('/api/settings', (req, res) => {
-  const { key, value } = req.body;
-  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, value);
-  res.json({ success: true });
-});
-
-app.post('/api/domain_rules', (req, res) => {
-  const { domain, is_blocked } = req.body;
-  db.prepare('INSERT INTO domain_rules (domain, is_blocked) VALUES (?, ?) ON CONFLICT(domain) DO UPDATE SET is_blocked = excluded.is_blocked').run(domain, is_blocked ? 1 : 0);
-  res.json({ success: true });
-});
-
-app.get('/api/domain_rules/:domain', (req, res) => {
-  const rule = db.prepare('SELECT is_blocked FROM domain_rules WHERE domain = ?').get(req.params.domain);
-  res.json({ is_blocked: rule ? rule.is_blocked === 1 : null });
-});
-
-
-// WebSockets
-io.on('connection', (socket) => {
-  console.log('Client connected for WebSocket updates');
+    const { url, title } = req.body;
+    db.prepare('INSERT INTO history (url, title) VALUES (?, ?)').run(url, title);
+    res.json({ success: true });
 });
 
 const PORT = process.env.PORT || 5800;
-
-initAdblocker().then(() => {
-  server.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`AeroNode Desktop UI running on port ${PORT}`);
+    console.log(`VNC WebSocket running on port 6080`);
 });

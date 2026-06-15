@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - "5800:5800"
+      - "6080:6080"
     environment:
       - USER_ID=0
       - GROUP_ID=0
