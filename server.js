@@ -1,7 +1,6 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cookieParser = require('cookie-parser');
 const path = require('path');
 const db = require('./db');
 const { initAdblocker } = require('./adblock');
@@ -15,45 +14,10 @@ const io = new Server(server);
 app.set('io', io);
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-const APP_PASSWORD = process.env.APP_PASSWORD || 'casaos';
-
-// Basic Auth Middleware
-const authMiddleware = (req, res, next) => {
-  if (req.path === '/login' || req.path === '/api/login' || req.path.startsWith('/assets')) {
-    return next();
-  }
-  if (req.cookies.auth_token === APP_PASSWORD) {
-    return next();
-  }
-  res.redirect('/login');
-};
-
-app.use(authMiddleware);
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Login Route
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.post('/api/login', (req, res) => {
-  const { password } = req.body;
-  if (password === APP_PASSWORD) {
-    res.cookie('auth_token', password, { httpOnly: true });
-    return res.json({ success: true });
-  }
-  res.status(401).json({ success: false, message: 'Invalid credentials' });
-});
-
-app.post('/api/logout', (req, res) => {
-  res.clearCookie('auth_token');
-  res.json({ success: true });
-});
 
 // Proxy Route
 app.use('/proxy', proxyRouter);

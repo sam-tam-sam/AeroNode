@@ -8,7 +8,6 @@ services:
     ports:
       - "5800:5800"
     environment:
-      - APP_PASSWORD=casaos
       - USER_ID=0
       - GROUP_ID=0
       - PUID=1000
@@ -30,9 +29,6 @@ services:
       scheme: "http"
       index: "/"
       envs:
-        - container: APP_PASSWORD
-          description:
-            en_us: Password to access the browser UI
         - container: PUID
           description:
             en_us: User ID
